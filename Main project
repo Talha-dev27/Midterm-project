@@ -1,0 +1,88 @@
+products = {
+    "apple": (200, "per kg"),
+    "banana": (100, "per dozen"),
+    "milk": (220, "per liter"),
+    "bread": (250, "per loaf"),
+    "eggs": (350, "per dozen"),
+    "rice": (270, "per kg"),
+    "sugar": (165, "per kg"),
+    "chicken": (660, "per kg"),
+    "beef": (2200, "per kg"),
+    "oil": (450, "per liter"),
+    "tea": (800, "per kg"),
+    "salt": (50, "per kg")
+}
+
+cart = []
+
+def display_products():
+    print("\nAvailable Products:")
+    for item, (price, unit) in products.items():
+        print(item.capitalize(), "- Rs", price, unit)
+
+
+def add_to_cart():
+    product_name = input("\nEnter product name to buy: ").lower()
+    if product_name in products:
+        quantity = int(input("Enter quantity of " + product_name + ": "))
+        price_per_unit, unit = products[product_name]
+        total_price = price_per_unit * quantity
+        cart.append((product_name, quantity, total_price, unit))
+        print(product_name.capitalize(), "x" + str(quantity), unit, "added to cart.")
+    else:
+        print("Product not found!")
+
+
+def view_cart():
+    if not cart:
+        print("\nCart is empty.")
+    else:
+        print("\nYour Cart:")
+        total = 0
+        for item, qty, price, unit in cart:
+            print(item.capitalize(), "x" + str(qty), unit, "=", "Rs", price)
+            total += price
+        print("Total Bill:", "Rs", total)
+
+
+def checkout():
+    if not cart:
+        print("\nCart is empty. Nothing to checkout.")
+    else:
+        total = sum(price for _, _, price, _ in cart)
+
+        if total >= 1000:
+            discount = total * 0.10
+            total -= discount
+            print("\n10% discount applied! You saved Rs", int(discount))
+        else:
+            print("\nNo discount applied.")
+
+        print("Final Bill: Rs", int(total))
+        print("Thank you for shopping with us!")
+        cart.clear()
+
+
+while True:
+    print("\n--- Grocery Store Billing System ---")
+    print("1. View Products")
+    print("2. Add to Cart")
+    print("3. View Cart")
+    print("4. Checkout")
+    print("5. Exit")
+
+    choice = input("Enter your choice (1-5): ")
+
+    if choice == "1":
+        display_products()
+    elif choice == "2":
+        add_to_cart()
+    elif choice == "3":
+        view_cart()
+    elif choice == "4":
+        checkout()
+    elif choice == "5":
+        print("Goodbye!")
+        break
+    else:
+        print("Invalid choice! Please try again.")
