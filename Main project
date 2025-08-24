@@ -1,37 +1,56 @@
 products = {
-    "apple": (200, "per kg"),
-    "banana": (100, "per dozen"),
-    "milk": (220, "per liter"),
-    "bread": (250, "per loaf"),
-    "eggs": (350, "per dozen"),
-    "rice": (270, "per kg"),
-    "sugar": (165, "per kg"),
-    "chicken": (660, "per kg"),
-    "beef": (2200, "per kg"),
-    "oil": (450, "per liter"),
-    "tea": (800, "per kg"),
-    "salt": (50, "per kg")
+    "apple": (200, "per kg", 50),
+    "banana": (100, "per dozen", 30),
+    "milk": (220, "per liter", 20),
+    "bread": (250, "per loaf", 15),
+    "eggs": (350, "per dozen", 40),
+    "rice": (270, "per kg", 100),
+    "sugar": (165, "per kg", 70),
+    "chicken": (660, "per kg", 25),
+    "beef": (2200, "per kg", 10),
+    "oil": (450, "per liter", 40),
+    "tea": (800, "per kg", 20),
+    "salt": (50, "per kg", 60)
 }
 
 cart = []
 
 def display_products():
     print("\nAvailable Products:")
-    for item, (price, unit) in products.items():
-        print(item.capitalize(), "- Rs", price, unit)
+    for item, (price, unit, stock) in products.items():
+        print(item.capitalize(), "- Rs", price, unit, "| Stock:", stock)
 
+def search_product():
+    name = input("\nEnter product name to search: ").lower()
+    if name in products:
+        price, unit, stock = products[name]
+        print(name.capitalize(), "- Rs", price, unit, "| Stock:", stock)
+    else:
+        print("Product not found!")
 
 def add_to_cart():
     product_name = input("\nEnter product name to buy: ").lower()
     if product_name in products:
+        price_per_unit, unit, stock = products[product_name]
         quantity = int(input("Enter quantity of " + product_name + ": "))
-        price_per_unit, unit = products[product_name]
+
+        if quantity > stock:
+            print("Sorry, only", stock, unit, "available.")
+            return
+
+        for i in range(len(cart)):
+            if cart[i][0] == product_name:
+                cart[i] = (product_name, cart[i][1] + quantity, cart[i][2] + price_per_unit * quantity, unit)
+                products[product_name] = (price_per_unit, unit, stock - quantity)
+                print(quantity, unit, product_name, "added to cart (updated).")
+                return
+
         total_price = price_per_unit * quantity
         cart.append((product_name, quantity, total_price, unit))
-        print(product_name.capitalize(), "x" + str(quantity), unit, "added to cart.")
+        products[product_name] = (price_per_unit, unit, stock - quantity)
+        print(str(quantity), unit, product_name, "added to cart.")
     else:
         print("Product not found!")
-
 
 def view_cart():
     if not cart:
@@ -44,44 +63,82 @@ def view_cart():
             total += price
         print("Total Bill:", "Rs", total)
 
+def remove_from_cart():
+    if not cart:
+        print("\nCart is empty.")
+        return
+    product_name = input("Enter product name to remove: ").lower()
+    for i in range(len(cart)):
+        if cart[i][0] == product_name:
+            # restore stock
+            price_per_unit, unit, stock = products[product_name]
+            products[product_name] = (price_per_unit, unit, stock + cart[i][1])
+            del cart[i]
+            print(product_name.capitalize(), "removed from cart.")
+            return
+    print("Item not found in cart.")
 
 def checkout():
     if not cart:
         print("\nCart is empty. Nothing to checkout.")
     else:
+        customer_name = input("\nEnter customer name: ")
+
         total = sum(price for _, _, price, _ in cart)
 
-        if total >= 1000:
+        # Discounts
+        if total >= 3000:
+            discount = total * 0.15
+            total -= discount
+            print("\n15% discount applied! You saved Rs", int(discount))
+        elif total >= 1000:
             discount = total * 0.10
             total -= discount
             print("\n10% discount applied! You saved Rs", int(discount))
         else:
             print("\nNo discount applied.")
 
-        print("Final Bill: Rs", int(total))
-        print("Thank you for shopping with us!")
-        cart.clear()
+        gst = total * 0.05
+        total += gst
 
+        # Print final receipt
+        print("\n--- Receipt ---")
+        print("Bill for:", customer_name)
+        print("----------------------")
+        for item, qty, price, unit in cart:
+            print(item.capitalize(), "x" + str(qty), unit, "=", "Rs", price)
+        print("GST (5%): Rs", int(gst))
+        print("Final Bill: Rs", int(total))
+        print("Thank you for shopping with us,", customer_name + "!")
+        print("----------------------")
+
+        cart.clear()
 
 while True:
     print("\n--- Grocery Store Billing System ---")
     print("1. View Products")
-    print("2. Add to Cart")
-    print("3. View Cart")
-    print("4. Checkout")
-    print("5. Exit")
+    print("2. Search Product")
+    print("3. Add to Cart")
+    print("4. View Cart")
+    print("5. Remove Item from Cart")
+    print("6. Checkout")
+    print("7. Exit")
 
-    choice = input("Enter your choice (1-5): ")
+    choice = input("Enter your choice (1-7): ")
 
     if choice == "1":
         display_products()
     elif choice == "2":
-        add_to_cart()
+        search_product()
     elif choice == "3":
-        view_cart()
+        add_to_cart()
     elif choice == "4":
-        checkout()
+        view_cart()
     elif choice == "5":
+        remove_from_cart()
+    elif choice == "6":
+        checkout()
+    elif choice == "7":
         print("Goodbye!")
         break
     else:
